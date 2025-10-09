@@ -1,0 +1,337 @@
+{
+  "name": "Cultural Information",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "placeName"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1568,
+        -224
+      ],
+      "id": "b48cdb18-fb91-4f83-84c2-0aa7e5ea1429",
+      "name": "Cultural Information Assistant"
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {
+          "topic": "general"
+        }
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        -16
+      ],
+      "id": "290eeab1-04a3-433b-b725-e2df2fbf573e",
+      "name": "Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "jbudw90A5Q2Zwqa4",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the text from the previous node. Replace `textPlain` with the correct key from your data.\nconst inputText = $input.first().json.output; \n\n// Regular expression to find URLs.\nconst urlRegex = /(https?:\\/\\/[^\\s<>\"\\')]+)/gi; \n\n// Find all matches and return as an array.\nconst extractedUrls = inputText.match(urlRegex) || [];\nconst finalUrl = [];\nfor (const url of extractedUrls) {\n  finalUrl.push({\"url\": url})\n}\n\nreturn finalUrl;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        -224
+      ],
+      "id": "f8d42e2b-9491-493a-b099-26ca06db0962",
+      "name": "URL Extractor & Scraper"
+    },
+    {
+      "parameters": {
+        "resource": "extract",
+        "urls": [
+          "={{ $json.url }}"
+        ],
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavily",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        -224
+      ],
+      "id": "a32b1994-a7a0-47d9-b990-403078597f68",
+      "name": "Extract",
+      "credentials": {
+        "tavilyApi": {
+          "id": "jbudw90A5Q2Zwqa4",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=As a helpful assistant you need to access the tavily tool and get 5 cultural facts about the place {{ $json.placeName }}.\n\nYou need to pass the place name as the argument to the tool.\nExtract all the url fields and return in a JSON format. Here is the JSON object you are to use:\n    [{\n      \"url\": \"\"\n    }]\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1344,
+        -224
+      ],
+      "id": "9a91320f-87fd-4541-a89e-2a4b987ca08a",
+      "name": "Web Scraper"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=As an assistant you need to summarize the cultural information of a place name {{ $('Cultural Information Assistant').item.json.placeName }} from {{ $json.toJsonString() }}. The place can be any country, state or city. Identify unique facts about the given place and summarize the facts in a list. Keep the number of facts only to 5, that are appealing in a single output.\nDo not add any text or verbose messages before and after the JSON.\n\nGenerate a list in below JSON format. Remove objects with empty title or summary:\n\n[{\n\"title\":\"Meaningful title of not more than 3 words\",\n\"summary:\": \"Paragraph describing the cultural fact\",\n\"image\": \"Image depicting the cultural fact. If there is no image then generate a prompt depicting the fact.\"\n}]",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        -224
+      ],
+      "id": "b2f523fb-e4ac-421f-adcc-560277c0318b",
+      "name": "Summarizer"
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        16
+      ],
+      "id": "048f4dba-9ebb-4524-9dc6-0099214e22a1",
+      "name": "Summarizer Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "CLpSTckEKLOmKGMn",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -1584,
+        0
+      ],
+      "id": "8c897a43-8726-4fe7-b41b-577fa94499ef",
+      "name": "Scraper Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "CLpSTckEKLOmKGMn",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "12be43f6-d598-48e6-86ac-84d85fa776d7",
+              "name": "={{ $json.output }}",
+              "value": "=",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -432,
+        -224
+      ],
+      "id": "22a3b040-0b17-4db9-9ae9-c3835287aa67",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -752,
+        32
+      ],
+      "id": "dd69a6de-7c5b-4383-80f1-836419054880",
+      "name": "GPT Summariser Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "3s7l3MPH0XlCohBs",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-4-turbo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1408,
+        -32
+      ],
+      "id": "082331ef-c35b-46c4-bf64-9cf245e60dd9",
+      "name": "GPT Scrape Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "3s7l3MPH0XlCohBs",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cultural Information Assistant": {
+      "main": [
+        [
+          {
+            "node": "Web Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "Web Scraper",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL Extractor & Scraper": {
+      "main": [
+        [
+          {
+            "node": "Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract": {
+      "main": [
+        [
+          {
+            "node": "Summarizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Scraper": {
+      "main": [
+        [
+          {
+            "node": "URL Extractor & Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarizer Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Scraper Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Summarizer": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT Summariser Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarizer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT Scrape Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Web Scraper",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4e97b048-9541-4518-8706-8b437d93419a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "df8a864776d23b14dd4a12bbbae078b89c0e6c4627bc78f78f2d0903be312f18"
+  },
+  "id": "UDvYyuvBoGo8K229",
+  "tags": []
+}

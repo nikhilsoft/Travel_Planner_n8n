@@ -1,0 +1,312 @@
+{
+  "name": "Travel Planner & Information Gatherer",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Travel Planner & Information Gatherer",
+        "formDescription": "This form will help travellers to gather information about any place and generate an itinerary.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Place to visit",
+              "placeholder": "Country/State/City",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Number of days to stay",
+              "fieldType": "number",
+              "placeholder": "8"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -1152,
+        -128
+      ],
+      "id": "64510f45-afef-42ee-9ad3-48f295428fce",
+      "name": "On form submission",
+      "webhookId": "531f8a8e-3b4d-4c8f-9fba-095d08ecd18d"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=As a travel assistant you need to need to provide cultural information based on the place name {{ $json['Place to visit'] }} and generate a travel plan for the number of days to stay {{ $json['Number of days to stay'] }}.\n\nYou have access to two tools:\n1. 'get_cultural_info' \n2. 'get_itinerary_info'\n\nYour decision logic:\n1. If place name is present and the number of days to stay is not 0, then generate an itinerary plan which can be obtained from the tool 'get_itinerary_info' only.\n\n2. If only the place name is present and the number of days to stay is 0, then get cultural information which can be obtained from the tool 'get_cultural_info' only.\n\n3. Based on the information provided figure out which specific tool to access and give the results. Do not execute both tools together.\n\n4. The get_cultural_info tool requires only the place name and the get_itinerary_info tool requires both the place name and the number of days to stay.\n\nResponse rules:\n- Return ONLY the JSON response from the tool, without modification or commentary.\n- Do not summarize, interpret, or alter any JSON data received from a tool.\n- Always produce valid JSON output.\n\nOutput Format:\nAlways return a JSON object exactly as received from the tool.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -896,
+        -128
+      ],
+      "id": "5a53ca09-6133-4d67-9297-bc60debd853d",
+      "name": "Orchestrator"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "UDvYyuvBoGo8K229",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/UDvYyuvBoGo8K229",
+          "cachedResultName": "Cultural Information"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "placeName": "={{ $json['Place to visit'] }}"
+          },
+          "matchingColumns": [
+            "placeName"
+          ],
+          "schema": [
+            {
+              "id": "placeName",
+              "displayName": "placeName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -576,
+        128
+      ],
+      "id": "020db6dd-cc9f-4d18-baf5-3668d5264a77",
+      "name": "get_cultural_info"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "gYsCLbL3aUIKg1H2",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/gYsCLbL3aUIKg1H2",
+          "cachedResultName": "Itinerary Planner"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "placeName": "={{ $json['Place to visit'] }}",
+            "noOfDaysStay": "={{ $json['Number of days to stay'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "placeName",
+              "displayName": "placeName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "noOfDaysStay",
+              "displayName": "noOfDaysStay",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -400,
+        128
+      ],
+      "id": "6754f311-f440-47a5-b245-344bb339a5ec",
+      "name": "get_itinerary_info"
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appIJZlpVHyIRxeCf",
+          "mode": "list",
+          "cachedResultName": "Travel Base",
+          "cachedResultUrl": "https://airtable.com/appIJZlpVHyIRxeCf"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbli0xr7ZBzQJd61e",
+          "mode": "list",
+          "cachedResultName": "Travel Details",
+          "cachedResultUrl": "https://airtable.com/appIJZlpVHyIRxeCf/tbli0xr7ZBzQJd61e"
+        },
+        "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Record_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        -800,
+        144
+      ],
+      "id": "87d4c503-6dfd-4929-bf7a-49fc37bf224a",
+      "name": "Cache",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "ynlubhTlN5E0pHp6",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nreturn JSON.parse($input.first().json.output)"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        -128
+      ],
+      "id": "9d63e27b-a043-4ce6-91d2-37d273d7cf69",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        96
+      ],
+      "id": "52a90eda-2376-4f30-8a84-ce1359c88cd9",
+      "name": "Orchestrator Model Old",
+      "credentials": {
+        "ollamaApi": {
+          "id": "CLpSTckEKLOmKGMn",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1072,
+        272
+      ],
+      "id": "f8afe27f-ec73-48cb-a7e0-6d081ec2a36e",
+      "name": "Orchestrator Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "3s7l3MPH0XlCohBs",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_cultural_info": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_itinerary_info": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orchestrator": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cache": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Orchestrator Model Old": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Orchestrator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orchestrator Model": {
+      "ai_languageModel": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8a4af9ef-ec55-421d-ad1b-afaa57f2b1eb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "df8a864776d23b14dd4a12bbbae078b89c0e6c4627bc78f78f2d0903be312f18"
+  },
+  "id": "uYU0E0U4KPVPQUui",
+  "tags": []
+}

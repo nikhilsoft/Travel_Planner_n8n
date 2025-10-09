@@ -1,0 +1,163 @@
+{
+  "name": "Itinerary Planner",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "placeName"
+            },
+            {
+              "name": "noOfDaysStay",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        -80
+      ],
+      "id": "4565bc5d-5dbd-4e17-80cf-b730b0529a2d",
+      "name": "Itinerary Planner"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=As a travel assistant you need to plan and  generate a travel itinerary for visiting the place {{ $json.placeName }} for {{ $json.noOfDaysStay }} days.\n\nGive your best in optimizing. Include multiple places by breaking down the days into parts. Include inter-city travelling days in the itinerary. Add rest days wherever possible. Mention the start date, end date, the name of the location and the list of the sight seeing activities.\n\nFor example, if someone is planning to visit India, then Delhi, Mumbai, Bangalore can be taken into the itinerary and for Delhi sight seeing places like India Gate, Old Delhi, Qutub Minar, Parliament can be included. Then the traveller may go to Mumbai. \n\nThis way plan and come up with a best option that can make the trip less hectic and memorable.\n\nGenerate an output strictly in below JSON Format:\n[{\n  \"start date\": \"\",\n  \"end date\": \"\",\n  \"place name\": \"\",\n  \"sight seeing place\": \"\"\n}]\n\nDo not add any text or verbose messages before and after the JSON.\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -208,
+        -80
+      ],
+      "id": "578336b4-d60b-45fa-bed0-cfbfaf1e4ca8",
+      "name": "Planner Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        144
+      ],
+      "id": "f7585657-104d-4506-8cc4-2bf49ab92442",
+      "name": "Planner Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "CLpSTckEKLOmKGMn",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "edfe3039-cbbb-498e-982f-2565f8f2119c",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        144,
+        -80
+      ],
+      "id": "1df06135-2276-48b6-8b1c-c93a61b15751",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -256,
+        96
+      ],
+      "id": "2f7ea205-155d-4d20-82b5-e5db80c44ab0",
+      "name": "Itinerary Planner Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "3s7l3MPH0XlCohBs",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Itinerary Planner": {
+      "main": [
+        [
+          {
+            "node": "Planner Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Planner Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Planner Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Itinerary Planner Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Planner Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c3016c78-522e-4071-b2a0-f743270dfe3a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "df8a864776d23b14dd4a12bbbae078b89c0e6c4627bc78f78f2d0903be312f18"
+  },
+  "id": "gYsCLbL3aUIKg1H2",
+  "tags": []
+}
